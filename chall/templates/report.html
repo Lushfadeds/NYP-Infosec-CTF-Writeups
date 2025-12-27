@@ -1,0 +1,29 @@
+
+{% extends 'base.html' %}
+{% block body %}
+<form method="post" class="report-form">
+    <h1>Report an Issue</h1>
+    <p>Found something not working during the New Year festivities? Let our festival support team know! (Query parameters not allowed)</p>
+
+    <label for="url">Faulty URL</label>
+    <input type="url" id="url" name="url" placeholder="URL" required>
+
+    <br>
+    <label for="desc">Description</label>
+    <textarea id="desc" name="desc" required></textarea>
+
+    <br>
+    <button type="submit" class="btn btn-warning">Submit Report</button>
+
+    {% if invalid %}
+        <p style="color: #ff5555;">You cannot enter any query parameters in the URL!</p>
+    {% endif %}
+    {% if error %}
+        <p>There was an error reporting the url.</p>
+    {% endif %}
+    {% if success %}
+        <p style="color: #0fe80f;">Successfully reported! Our team will look into it shortly.</p>
+    {% endif %}
+</form>
+{% endblock %}
+

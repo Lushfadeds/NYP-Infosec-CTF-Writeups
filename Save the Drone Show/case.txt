@@ -1,0 +1,12 @@
+Case File: Drone Show Sabotage
+
+Incident Summary:
+This year, the school has prepared a drone show as part of the New Year celebrations.
+However, someone has sabotaged the system and encoded the final launch command.
+
+Investigator Notes:
+- The attacker is not skilled, but petty.
+- They like using simple encoding techniques and letter-shifting ciphers.
+
+Recovered console message:
+"Let’s see if you can put the scrambled pieces back together before midnight."

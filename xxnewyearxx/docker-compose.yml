@@ -1,0 +1,23 @@
+services:
+  xxnewyearsxx:
+    build: ./xxnewyearsxx
+    container_name: xxnewyearsxx
+    image: xxnewyearsxx-image
+    ports:
+      - "3000:3000"
+    restart: always
+    networks:
+      - app-network
+
+  secretservice:
+    build: secretservice
+    container_name: secretservice
+    image: secretservice-image
+    hostname: secretservice
+    restart: always
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge

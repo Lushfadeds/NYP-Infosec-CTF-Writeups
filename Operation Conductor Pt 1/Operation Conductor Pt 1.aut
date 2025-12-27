@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<AutopsyCase>
+  <SchemaVersion>6.0</SchemaVersion>
+  <CreatedDate>2025/12/21 21:16:09 (SGT)</CreatedDate>
+  <ModifiedDate>2025/12/21 21:16:11 (SGT)</ModifiedDate>
+  <CreatedByAutopsyVersion>4.22.1</CreatedByAutopsyVersion>
+  <SavedByAutopsyVersion>4.22.1</SavedByAutopsyVersion>
+  <Case>
+    <Name>operation_conductor_pt_1_20251221_211609</Name>
+    <DisplayName>Operation Conductor Pt 1</DisplayName>
+    <Number>1</Number>
+    <Examiner>jian wei</Examiner>
+    <ExaminerPhone>87508362</ExaminerPhone>
+    <ExaminerEmail>lushfadeds@gmail.com</ExaminerEmail>
+    <CaseNotes/>
+    <CaseType>Single-user case</CaseType>
+    <Database/>
+    <CaseDatabase>autopsy.db</CaseDatabase>
+    <TextIndex/>
+  </Case>
+  <ContentProvider>
+    <Name/>
+  </ContentProvider>
+  <OriginalCase/>
+</AutopsyCase>

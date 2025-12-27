@@ -1,0 +1,7 @@
+Congratulations.
+
+The password to the ZIP file located at the root is P4SSi0n&
+
+It will begin with Flag. 
+
+Hint: The file inside does not open despite being a jpeg. Perhaps it is disguised with magic? Regardless, your password will be inside the numbers that behold!

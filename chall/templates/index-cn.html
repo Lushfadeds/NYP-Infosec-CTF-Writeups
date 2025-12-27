@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+{% block body %}
+<section class="container" style="margin-bottom: 10rem;">
+    <div class="row g-5">
+        <div class="col-md-6 d-flex justify-content-center flex-column">
+            <h2>欢迎参加新年庆祝活动！</h2>
+            <p>
+                绚丽的烟花点亮夜空，整座城市瞬间焕发生机。街道上挂满了节日彩灯，音乐响彻每个角落。家人团聚，朋友重逢，全城欢庆新的开始。
+            </p>
+            <p>
+                午夜将至，希望的气息弥漫在空气中。无论你是许下新年愿望，还是仅仅享受节日的欢乐，今晚都象征着新的机遇、新的梦想，以及每个人人生的新篇章。
+            </p>
+        </div>
+        <div class="col-md-6 d-flex justify-content-center align-items-center flex-column">
+            <img src="{{ url_for('static', filename='images/hero.webp') }}" style="width: 100%;">
+        </div>
+    </div>
+</section>
+
+<section class="container" style="margin-bottom: 10rem;">
+    <div class="row g-5">
+        <div class="col-md-6 d-flex justify-content-center align-items-center flex-column">
+            <img src="{{ url_for('static', filename='images/img1.jpg') }}" style="width: 100%;">
+        </div>
+        <div class="col-md-6 d-flex justify-content-center flex-column">
+            <h2>新年传统带来快乐</h2>
+            <p>
+            </p>
+从烟花到节日盛宴，这座城市庆祝团结与新生。灯笼象征着好运，许愿树上挂满了对来年的美好祝愿。
+            <p>
+今晚提醒我们，无论过去一年多么艰难，更美好的未来总会到来。
+            </p>
+        </div>
+    </div>
+</section>
+
+<section class="container">
+    <div class="row g-5">
+        <div class="col-md-6 d-flex justify-content-center flex-column">
+            <h2>最新节日资讯:</h2>
+            <ol>
+                <li>
+烟花倒计时：主要活动将于午夜在中央广场开始。请尽早到达以获得最佳观赏位置！
+                </li>
+                <li>
+社区庆祝活动摊位：整晚提供免费小吃、游戏和表演。
+                </li>
+            </ol>
+        </div>
+        <div class="col-md-6 d-flex justify-content-center align-items-center flex-column">
+            <img src="{{ url_for('static', filename='images/img2.jpg') }}" style="width: 100%;">
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+

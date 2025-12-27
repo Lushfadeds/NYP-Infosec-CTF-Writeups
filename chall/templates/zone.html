@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+
+{% block body %}
+<section class="container" style="margin-bottom: 10rem;">
+    <div class="row g-5">
+        <div class="col-md-6 d-flex justify-content-center flex-column">
+            <h2>Welcome to the New Year Celebration!</h2>
+            <p>
+                As the clock strikes midnight, we step into a brand new year full of opportunities, dreams, and fresh beginnings. Let’s leave the past behind and embrace the future with joy and hope.
+            </p>
+            <p>
+                This is the time to celebrate achievements, cherish moments with loved ones, and set new resolutions. Whether you’re surrounded by friends or enjoying a quiet reflection, the New Year brings a sense of renewal and excitement.
+            </p>
+        </div>
+        <div class="col-md-6 d-flex justify-content-center align-items-center flex-column">
+            <img src="{{ url_for('static', filename='images/img3.jpg') }}" style="width: 100%;">
+        </div>
+    </div>
+</section>
+
+<section class="container" style="margin-bottom: 10rem;">
+    <div class="row g-5">
+        <div class="col-md-6 d-flex justify-content-center align-items-center flex-column">
+            <img src="{{ url_for('static', filename='images/img4.jpg') }}" style="width: 100%;">
+        </div>
+        <div class="col-md-6 d-flex justify-content-center flex-column">
+            <h2>Festive Highlights</h2>
+            <ol>
+                <li>
+                    Midnight Fireworks: Light up the sky with dazzling displays of color and joy.
+                </li>
+                <li>
+                    Celebratory Toasts: Raise your glass to new beginnings and shared happiness.
+                </li>
+                <li>
+                    Family & Friends: Cherish the moments spent with the people who matter most.
+                </li>
+                <li>
+                    New Year Resolutions: Set inspiring goals to guide you through the upcoming year.
+                </li>
+            </ol>
+        </div>
+    </div>
+</section>
+
+<section class="container">
+    <div class="row g-5">
+        <div class="col-md-6 d-flex justify-content-center flex-column">
+            <h2>Upcoming Festivities</h2>
+            <ol>
+                <li>
+                    City Celebrations: Join public events, parades, and concerts welcoming the New Year.
+                </li>
+                <li>
+                    Winter Markets & Treats: Explore festive stalls, delicious food, and handcrafted gifts.
+                </li>
+            </ol>
+        </div>
+        <div class="col-md-6 d-flex justify-content-center align-items-center flex-column">
+            <img src="{{ url_for('static', filename='images/img5.jpg') }}" style="width: 100%;">
+        </div>
+    </div>
+</section>
+{% endblock %}
+

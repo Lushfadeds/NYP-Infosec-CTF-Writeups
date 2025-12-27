@@ -1,0 +1,5 @@
+This is the first step. Next, search for the text 'NYPCtF', without the quotation marks. The 16 proceeding characters will be the next clue. 
+
+Clue for the pattern: This uses Vigenère, and the key is 'python'
+
+The fireworks are waiting, tick tock.

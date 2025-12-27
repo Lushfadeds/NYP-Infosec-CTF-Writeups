@@ -1,0 +1,15 @@
+Crypto - The Lighthouse signal
+
+The old Portwind Lighthouse has been offline for years. Yet last night, your receiver picked up a strange transmission from its direction.
+
+The log from your radio console shows:
+aol zavyt opaz ha tpkupnoa
+
+Beneath it, the system also recorded a line of diagnostic bits:
+01010011 01000101 01010110 01000101 01001110
+
+
+
+
+
+

@@ -1,0 +1,29 @@
+.report-form {
+    margin: 100px auto;
+    display: flex;
+    flex-direction: column;
+    width: 80vw;
+}
+
+.gift-img {
+    height: 300px;
+    width: 100%;
+    object-fit: cover;
+}
+
+body {
+    background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), 
+        url('/static/images/newyear_fireworks.gif');
+    background-size: cover;
+    background-position: center center;
+    background-repeat: no-repeat;
+}
+
+h1, h2, p, ol, label {
+    color: gold !important;
+}
+
+button {
+    border-radius: 8px !important;
+}
+

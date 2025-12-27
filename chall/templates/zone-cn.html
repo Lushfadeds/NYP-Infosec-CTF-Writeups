@@ -1,0 +1,65 @@
+
+{% extends 'base.html' %}
+
+{% block body %}
+<section class="container" style="margin-bottom: 10rem;">
+    <div class="row g-5">
+        <div class="col-md-6 d-flex justify-content-center flex-column">
+            <h2>欢迎参加新年庆祝活动！</h2>
+            <p>
+当午夜钟声敲响，我们迈入充满机遇、梦想和全新开始的崭新一年。让我们告别过去，满怀喜悦和希望地拥抱未来。
+            </p>
+            <p>
+这是庆祝成就、珍惜与亲人共度时光、制定新年计划的时刻。无论你是与朋友欢聚一堂，还是享受片刻宁静，新年都带来焕然一新和激动人心的感觉。
+            </p>
+        </div>
+        <div class="col-md-6 d-flex justify-content-center align-items-center flex-column">
+            <img src="{{ url_for('static', filename='images/img3.jpg') }}" style="width: 100%;">
+        </div>
+    </div>
+</section>
+
+<section class="container" style="margin-bottom: 10rem;">
+    <div class="row g-5">
+        <div class="col-md-6 d-flex justify-content-center align-items-center flex-column">
+            <img src="{{ url_for('static', filename='images/img4.jpg') }}" style="width: 100%;">
+        </div>
+        <div class="col-md-6 d-flex justify-content-center flex-column">
+            <h2>节日亮点</h2>
+            <ol>
+                <li>
+午夜烟花：用绚丽多彩的烟花点亮夜空，带来欢乐。
+                </li>
+                <li>
+庆祝祝酒：举杯庆祝新的开始和共同的幸福。
+                </li>
+                <li>
+家人和朋友：珍惜与最重要的人共度的时光。
+                </li>
+                <li>
+新年计划：设定鼓舞人心的目标，指引你度过即将到来的一年。
+                </li>
+            </ol>
+        </div>
+    </div>
+</section>
+
+<section class="container">
+    <div class="row g-5">
+        <div class="col-md-6 d-flex justify-content-center flex-column">
+            <h2>即将举行的庆祝活动</h2>
+            <ol>
+                <li>
+城市庆祝活动：参加公共活动、游行和音乐会，迎接新年。
+                </li>
+                <li>
+冬季市集与美食：探索充满节日气氛的摊位、品尝美味佳肴、选购手工礼品。
+                </li>
+            </ol>
+        </div>
+        <div class="col-md-6 d-flex justify-content-center align-items-center flex-column">
+            <img src="{{ url_for('static', filename='images/img5.jpg') }}" style="width: 100%;">
+        </div>
+    </div>
+</section>
+{% endblock %}

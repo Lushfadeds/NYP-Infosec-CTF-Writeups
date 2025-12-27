@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+{% block body %}
+<section class="container" style="margin-bottom: 10rem;">
+    <div class="row g-5">
+        <div class="col-md-6 d-flex justify-content-center flex-column">
+            <h2>Welcome to the New Year Festival!</h2>
+            <p>
+                The City bursts into life as fireworks paint the night sky. Streets glow with festive lanterns and music echoes through every corner. Families gather, friends reunite, and the entire city celebrates a fresh beginning.
+            </p>
+            <p>
+                As midnight approaches, hope fills the air. Whether you're making resolutions or simply enjoying the festivities, this night marks new opportunities, new dreams, and a new chapter for everyone.
+            </p>
+        </div>
+        <div class="col-md-6 d-flex justify-content-center align-items-center flex-column">
+            <img src="{{ url_for('static', filename='images/hero.webp') }}" style="width: 100%;">
+        </div>
+    </div>
+</section>
+
+<section class="container" style="margin-bottom: 10rem;">
+    <div class="row g-5">
+        <div class="col-md-6 d-flex justify-content-center align-items-center flex-column">
+            <img src="{{ url_for('static', filename='images/img1.jpg') }}" style="width: 100%;">
+        </div>
+        <div class="col-md-6 d-flex justify-content-center flex-column">
+            <h2>New Year Traditions Spark Joy</h2>
+            <p>
+                From fireworks to festive feasts, the city celebrates unity and renewal. Lanterns symbolize fortune, and wishing trees are filled with hopes for the year ahead.
+            </p>
+            <p>
+                Tonight is a reminder that no matter how difficult the past year has been, a brighter future always awaits.
+            </p>
+        </div>
+    </div>
+</section>
+
+<section class="container">
+    <div class="row g-5">
+        <div class="col-md-6 d-flex justify-content-center flex-column">
+            <h2>Latest Festive Updates:</h2>
+            <ol>
+                <li>
+                    Fireworks Countdown: The main event begins at midnight at the central plaza. Arrive early for the best view!
+                </li>
+                <li>
+                    Community Celebration Booths: Free snacks, games, and performances are available all evening.
+                </li>
+            </ol>
+        </div>
+        <div class="col-md-6 d-flex justify-content-center align-items-center flex-column">
+            <img src="{{ url_for('static', filename='images/img2.jpg') }}" style="width: 100%;">
+        </div>
+    </div>
+</section>
+{% endblock %}
+
